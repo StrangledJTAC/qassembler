@@ -10,7 +10,7 @@ class AssemblerSyntaxError(AssemblerError):
         self.reason = reason
 
     def __str__(self):
-        return "Syntax error on line %d: %s" % (self.line, self.reason)
+        return f"Syntax error on line {self.line}: {self.reason}"
 
 
 class AssemblerRangeError(AssemblerError):
@@ -19,4 +19,12 @@ class AssemblerRangeError(AssemblerError):
         self.reason = reason
 
     def __str__(self):
-        return "Range error on line %d: %s" % (self.line, self.reason)
+        return f"Range error on line {self.line}: {self.reason}"
+
+
+class AssemblerMemoryError(AssemblerError):
+    def __init__(self, reason):
+        self.reason = reason
+
+    def __str__(self):
+        return f"QCPU instruction memory limit exceeded: {self.reason}"
