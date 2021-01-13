@@ -28,7 +28,7 @@ chmod +x qas.py
 qas.py -f filepath
 
 example:
-qas.py -f ~\files\test.s
+qas.py -f ~/docs/test.s
 qas.py -f test.s
 ```
 .txt file containing the assembled machine instructions should appear in the current working directory.
