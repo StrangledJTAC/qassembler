@@ -10,7 +10,7 @@ A hopefully improved version of @Qsmally's [QCPU-Assembler](https://github.com/Q
 ## Limitations
 
 * Variables remain unsupported as the targetted hardware does not implement the necessary memory protection techniques.
-* Due to an unclear specification, the current implementation does not allow operands for the MSC opcode.
+* Due to unclear ISA specification, the current implementation does not allow operands for the MSC opcode.
 
 ## Installation
 
