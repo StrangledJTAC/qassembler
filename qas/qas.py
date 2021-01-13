@@ -1,6 +1,7 @@
 #! /usr/bin/python3
 
 import argparse
+import filecmp
 import pathlib
 import qasm_parser
 import qasm_code
@@ -61,15 +62,20 @@ def main():
         pardir = pathlib.Path(__file__).parent.absolute().parent
         testdir = pardir.joinpath("tests")
         for file in testdir.iterdir():
+            print(f"Testing {file}")
             assembled_test = assemble(file)
 
             inpath = pathlib.PurePath(file)
             outfile_name = inpath.name.split('.')[0] + '.txt'
             asm_dir = pathlib.Path(__file__).parent.absolute().parent
-            output_path = (asm_dir.joinpath('output', outfile_name))
+            output_path = asm_dir.joinpath('output', outfile_name)
 
             with open(output_path, 'w') as outfile:
                 outfile.write("\n".join(str(item) for item in assembled_test))
+        # generate test report
+        outputdir = asm_dir.joinpath("output")
+        comp = filecmp.dircmp(outputdir, outputdir.joinpath("expected"))
+        comp.report()
 
     else:  # file mode
         assembled_file = assemble(infile.file)
@@ -77,7 +83,7 @@ def main():
         inpath = pathlib.PurePath(infile.file)
         outfile_name = inpath.name.split('.')[0] + '.txt'
         asm_dir = pathlib.Path.cwd()
-        output_path = (asm_dir.joinpath('output', outfile_name))
+        output_path = asm_dir.joinpath(outfile_name)
 
         with open(output_path, 'w') as outfile:
             outfile.write("\n".join(str(item) for item in assembled_file))
