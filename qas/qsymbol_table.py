@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 class symbolizer:
     def __init__(self):
         self.symbol_table = {
