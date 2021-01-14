@@ -3,25 +3,24 @@ import error_classes as asm_err
 import sys
 
 
-def preprocessor(infile):
-    try:
-        with open(infile, 'r') as asm:
-            lines = asm.readlines()
-    except FileNotFoundError:
-        sys.exit("File does not exist or path is incorrect.")
-
-    # strip comments, remove empty lines, and unnecessary whitespace
-    lines = [re.sub(r"[;/].*", "", line) for line in lines]
-    lines = [line for line in lines if line != ""]
-    lines = [line.strip() for line in lines]
-    return lines
-
-
 class parser:
-    def __init__(self, source):
-        self.source = preprocessor(source)
+    def __init__(self, infile):
+        self.source = self.preprocessor(infile)
         self.current_command = ""
         self.lindex = 0
+
+    def preprocessor(self, infile):
+        try:
+            with open(infile, 'r') as asm:
+                lines = asm.readlines()
+        except FileNotFoundError:
+            sys.exit("qas fatal error: File does not exist.")
+
+        # strip comments, remove empty lines, and unnecessary whitespace
+        lines = [re.sub(r"[;/].*", "", line) for line in lines]
+        lines = [line for line in lines if line != ""]
+        lines = [line.strip() for line in lines]
+        return lines
 
     def hasMoreCommands(self):
         if self.lindex == len(self.source):
@@ -78,7 +77,7 @@ class parser:
         agree : str
             identifier for acceptable operands for given opcode.
         symbolizer : object
-            symbolizer instance handed from main().
+            symbolizer instance handed from assemble().
 
         Raises
         ------
@@ -193,3 +192,4 @@ class parser:
         else:
             u_reason = "OPERAND_TYPE_NOT_DEFINED: Please Report this Bug."
             raise asm_err.AssemblerUnknownError(self.lindex, u_reason)
+

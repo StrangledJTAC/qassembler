@@ -6,7 +6,7 @@ import pathlib
 import qasm_parser
 import qasm_code
 import qsymbol_table
-import error_classes as asm_error
+import error_classes as asm_err
 
 
 def assemble(infile):
@@ -22,14 +22,14 @@ def assemble(infile):
                 symbolizer.addEntry(first.label(), first.lindex - 1)
             else:
                 ldef_reason = "Label defined more than once"
-                raise asm_error.AssemblerSyntaxError(first.lindex, ldef_reason)
+                raise asm_err.AssemblerSyntaxError(first.lindex, ldef_reason)
         else:
             continue
 
     # Reset parser and exclude label definitions from further analysis
     first.reset()
-    if len(first.source) > 32:
-        raise asm_error.AssemblerMemoryError("Program Size Maximum 32 bytes")
+    if len(first.source) > 32:  # test program size within bounds
+        raise asm_err.AssemblerMemoryError("Program Size Maximum 32 bytes")
 
     # Second Pass: Collect instructions and generate machine code
     generator = qasm_code.generator()  # initialize code generator object
@@ -43,7 +43,7 @@ def assemble(infile):
             assembled_list.append(operation)
         else:
             ctype_reason = ("UNDEFINED_COMMAND_TYPE: Please Report this Bug")
-            raise asm_error.AssemblerInternalError(first.lindex, ctype_reason)
+            raise asm_err.AssemblerInternalError(first.lindex, ctype_reason)
 
     return assembled_list
 
