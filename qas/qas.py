@@ -10,12 +10,12 @@ import error_classes as asm_err
 
 class Assembler:
     def __init__(self, infile):
-        self.assembled_list = []
-        self.infile = infile
+        self.__assembled_list = []
+        self.__infile = infile
 
     def assemble(self):
         # First Pass: Collect all labels and add them to symbol table
-        first = qasm_parser.Parser(self.infile)  # initialize parser object
+        first = qasm_parser.Parser(self.__infile)  # initialize parser object
         symbolizer = qasm_code.Symbolizer()  # initialize symbolizer object
         while first.hasMoreCommands():
             first.advance()
@@ -34,16 +34,16 @@ class Assembler:
             raise asm_err.AssemblerMemoryError("Program Size Maximum 32 bytes")
 
         # Second Pass: Collect instructions and generate machine code
-        generator = qasm_code.generator()  # initialize code generator object
+        generator = qasm_code.Generator()  # initialize code generator object
         while first.hasMoreCommands():
             first.advance()
             if first.commandType() == 'data':
-                self.assembled_list.append(first.data())
+                self.__assembled_list.append(first.data())
             elif first.commandType() == 'operation':
                 if generator.contains(first.operation()):
                     opcode = generator.code(first.operation())
                     operation = opcode[0] + first.operand(opcode[1], symbolizer)
-                    self.assembled_list.append(operation)
+                    self.__assembled_list.append(operation)
                 else:
                     u_reason = "Unrecognized Instruction."
                     raise asm_err.AssemblerSyntaxError(first.lindex, u_reason)
@@ -51,7 +51,7 @@ class Assembler:
                 ctype_reason = "UNDEFINED_COMMAND_TYPE: Please Report this Bug"
                 raise asm_err.AssemblerInternalError(first.lindex, ctype_reason)
 
-        return self.assembled_list
+        return self.__assembled_list
 
 
 def main():

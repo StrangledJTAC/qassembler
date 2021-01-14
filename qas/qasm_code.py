@@ -10,11 +10,11 @@ class Symbolizer:
     def contains(self, symbol):
         return bool(symbol in self.symbol_table)
 
-    def Getaddress(self, symbol):
+    def getAddress(self, symbol):
         return self.symbol_table[symbol]
 
 
-class generator:
+class Generator:
     def __init__(self):
         self.code_table = {
          "MSC": ("00000", '-n'), "SST": ("00001", '-d'),

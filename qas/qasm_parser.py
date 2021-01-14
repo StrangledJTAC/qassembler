@@ -103,7 +103,7 @@ class Parser:
                 register = register.group()
                 num = int(re.search(r"\d", register).group())
                 if num in range(8):
-                    return symbolizer.Getaddress(register)
+                    return symbolizer.getAddress(register)
                 else:
                     v_reason = "Register out of Range: $0 - $7"
                     raise asm_err.AssemblerRangeError(self.lindex, v_reason)
@@ -129,7 +129,7 @@ class Parser:
             plabel = re.search(lpattern, self.current_command)
             if plabel is not None:
                 if symbolizer.contains(plabel.group()) is True:
-                    dec_line = symbolizer.Getaddress(plabel.group())
+                    dec_line = symbolizer.getAddress(plabel.group())
                     bin_line = "{0:b}".format(dec_line).zfill(5)
                     return bin_line
                 else:
@@ -188,4 +188,3 @@ class Parser:
         else:
             u_reason = "OPERAND_TYPE_NOT_DEFINED: Please Report this Bug."
             raise asm_err.AssemblerUnknownError(self.lindex, u_reason)
-
