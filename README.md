@@ -4,8 +4,10 @@ A hopefully improved version of @Qsmally's [QCPU-Assembler](https://github.com/Q
 
 ## Features
 
-* Label Support: You may now define labels and use them in JMP instructions.
+* Label Support: You may now define labels and use them in JMP instructions. Valid label definitions must begin with an identifier and end with a colon(:). 
+An identifier is an sequence of alphanumeric, underscore(\_), or dot(.) characters of arbitrary length, although the first character must be a letter, the underscore character(\_) or dot(.). Labels are case sensitive.
 * Error Reporting: qassembler will now halt and report programmer errors.
+* Comment Support (inherited from QCPU-Assembler): All characters following the semicolon(;) or slash(/) characters, inclusive, are excluded from analysis by the assembler.
 
 ## Limitations
 
