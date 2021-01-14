@@ -1,3 +1,19 @@
+class Symbolizer:
+    def __init__(self):
+        self.symbol_table = {
+         "$0": "000", "$1": "001", "$2": "010", "$3": "011", "$4": "100",
+         "$5": "101", "$6": "110", "$7": "111"}
+
+    def addEntry(self, symbol, address):
+        self.symbol_table[symbol] = address
+
+    def contains(self, symbol):
+        return bool(symbol in self.symbol_table)
+
+    def Getaddress(self, symbol):
+        return self.symbol_table[symbol]
+
+
 class generator:
     def __init__(self):
         self.code_table = {
@@ -11,6 +27,9 @@ class generator:
          "XOR": ("01110", '-r'), "POI": ("01111", '-r'),
          "NOP": ("100", '-n'), "JMP": ("101", '-l'),
          "MST": ("110", '-a'), "MLD": ("111", '-a')}
+
+    def contains(self, mnemonic):
+        return bool(mnemonic in self.code_table)
 
     def code(self, mnemonic):
         return self.code_table[mnemonic]

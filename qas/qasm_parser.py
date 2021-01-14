@@ -3,7 +3,7 @@ import error_classes as asm_err
 import sys
 
 
-class parser:
+class Parser:
     def __init__(self, infile):
         self.source = self.preprocessor(infile)
         self.current_command = ""
@@ -63,11 +63,7 @@ class parser:
 
     def operation(self):
         opcode = re.match(r"[A-Z]{3}", self.current_command).group()
-        if opcode is None:
-            u_reason = "Unrecognized Instruction."
-            raise asm_err.AssemblerSyntaxError(self.lindex, u_reason)
-        else:
-            return opcode
+        return opcode
 
     def operand(self, agree, symbolizer):
         """

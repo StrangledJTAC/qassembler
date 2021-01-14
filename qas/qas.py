@@ -5,47 +5,53 @@ import filecmp
 import pathlib
 import qasm_parser
 import qasm_code
-import qsymbol_table
 import error_classes as asm_err
 
 
-def assemble(infile):
-    assembled_list = []
+class Assembler:
+    def __init__(self, infile):
+        self.assembled_list = []
+        self.infile = infile
 
-    # First Pass: Collect all labels and add them to symbol table
-    first = qasm_parser.parser(infile)  # initialize parser object
-    symbolizer = qsymbol_table.symbolizer()  # initialize symbolizer object
-    while first.hasMoreCommands():
-        first.advance()
-        if first.commandType() == 'label':
-            if symbolizer.contains(first.label()) is False:
-                symbolizer.addEntry(first.label(), first.lindex - 1)
+    def assemble(self):
+        # First Pass: Collect all labels and add them to symbol table
+        first = qasm_parser.Parser(self.infile)  # initialize parser object
+        symbolizer = qasm_code.Symbolizer()  # initialize symbolizer object
+        while first.hasMoreCommands():
+            first.advance()
+            if first.commandType() == 'label':
+                if symbolizer.contains(first.label()) is False:
+                    symbolizer.addEntry(first.label(), first.lindex - 1)
+                else:
+                    ldef_reason = "Label defined more than once"
+                    raise asm_err.AssemblerSyntaxError(first.lindex, ldef_reason)
             else:
-                ldef_reason = "Label defined more than once"
-                raise asm_err.AssemblerSyntaxError(first.lindex, ldef_reason)
-        else:
-            continue
+                continue
 
-    # Reset parser and exclude label definitions from further analysis
-    first.reset()
-    if len(first.source) > 32:  # test program size within bounds
-        raise asm_err.AssemblerMemoryError("Program Size Maximum 32 bytes")
+        # Reset parser and exclude label definitions from further analysis
+        first.reset()
+        if len(first.source) > 32:  # test program size within bounds
+            raise asm_err.AssemblerMemoryError("Program Size Maximum 32 bytes")
 
-    # Second Pass: Collect instructions and generate machine code
-    generator = qasm_code.generator()  # initialize code generator object
-    while first.hasMoreCommands():
-        first.advance()
-        if first.commandType() == 'data':
-            assembled_list.append(first.data())
-        elif first.commandType() == 'operation':
-            opcode = generator.code(first.operation())
-            operation = opcode[0] + first.operand(opcode[1], symbolizer)
-            assembled_list.append(operation)
-        else:
-            ctype_reason = ("UNDEFINED_COMMAND_TYPE: Please Report this Bug")
-            raise asm_err.AssemblerInternalError(first.lindex, ctype_reason)
+        # Second Pass: Collect instructions and generate machine code
+        generator = qasm_code.generator()  # initialize code generator object
+        while first.hasMoreCommands():
+            first.advance()
+            if first.commandType() == 'data':
+                self.assembled_list.append(first.data())
+            elif first.commandType() == 'operation':
+                if generator.contains(first.operation()):
+                    opcode = generator.code(first.operation())
+                    operation = opcode[0] + first.operand(opcode[1], symbolizer)
+                    self.assembled_list.append(operation)
+                else:
+                    u_reason = "Unrecognized Instruction."
+                    raise asm_err.AssemblerSyntaxError(first.lindex, u_reason)
+            else:
+                ctype_reason = "UNDEFINED_COMMAND_TYPE: Please Report this Bug"
+                raise asm_err.AssemblerInternalError(first.lindex, ctype_reason)
 
-    return assembled_list
+        return self.assembled_list
 
 
 def main():
@@ -63,7 +69,8 @@ def main():
         testdir = pardir.joinpath("tests")
         for file in testdir.iterdir():
             print(f"Testing {file}")
-            assembled_test = assemble(file)
+            test_assembler = Assembler(file)
+            assembled_test = test_assembler.assemble()
 
             inpath = pathlib.PurePath(file)
             outfile_name = inpath.name.split('.')[0] + '.txt'
@@ -78,7 +85,8 @@ def main():
         comp.report()
 
     else:  # file mode
-        assembled_file = assemble(infile.file)
+        file_assembler = Assembler(infile.file)
+        assembled_file = file_assembler.assemble()
 
         inpath = pathlib.PurePath(infile.file)
         outfile_name = inpath.name.split('.')[0] + '.txt'
