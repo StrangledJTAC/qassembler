@@ -5,7 +5,7 @@ import filecmp
 import pathlib
 import qasm_parser
 import qasm_code
-import error_classes as asm_err
+import qasm_error as asm_err
 
 
 class Assembler:

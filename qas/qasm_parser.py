@@ -1,5 +1,5 @@
 import re
-import error_classes as asm_err
+import qasm_error as asm_err
 import sys
 
 
@@ -62,8 +62,12 @@ class Parser:
         return label.group()
 
     def operation(self):
-        opcode = re.match(r"[A-Z]{3}", self.current_command).group()
-        return opcode
+        opcode = re.match(r"[A-Z]{3}", self.current_command)
+        if opcode is None:
+            u_reason = "Malformed Instruction"
+            raise asm_err.AssemblerSyntaxError(self.lindex, u_reason)
+        else:
+            return opcode.group()
 
     def operand(self, agree, symbolizer):
         """
