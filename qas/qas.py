@@ -54,47 +54,44 @@ class Assembler:
         return self.__assembled_list
 
 
-def main():
-    parser = argparse.ArgumentParser()
+if __name__ == '__main__':
 
+    ASM_DIR = pathlib.Path(__file__).parent.absolute().parent  # repo main dir
+    TEST_DIR = ASM_DIR.joinpath("tests")  # test input dir
+    OUTPUT_DIR = ASM_DIR.joinpath("output")  # test output dir
+    EXPECTED_DIR = OUTPUT_DIR.joinpath("expected")  # test expected ouput dir
+    CWD = pathlib.Path.cwd()  # current working dir
+
+    parser = argparse.ArgumentParser()
     parser.add_argument("--file", "-f", action="store", required=False)
     parser.add_argument("--test", "-t", action="store_true", default=False)
     infile = parser.parse_args()
+
     if not (infile.file or infile.test):
         parser.error("qas fatal error: No action requested. Use -f or -t.")
 
     # test mode > do not invoke in normal operations (overrides other modes)
     if infile.test is True:
-        pardir = pathlib.Path(__file__).parent.absolute().parent
-        testdir = pardir.joinpath("tests")
-        for file in testdir.iterdir():
+        for file in TEST_DIR.iterdir():
             print(f"Testing {file}")
-            test_assembler = Assembler(file)
-            assembled_test = test_assembler.assemble()
+            assembled_test = Assembler(file).assemble()
 
             inpath = pathlib.PurePath(file)
-            outfile_name = inpath.name.split('.')[0] + '.txt'
-            asm_dir = pathlib.Path(__file__).parent.absolute().parent
-            output_path = asm_dir.joinpath('output', outfile_name)
+            outfile_name = inpath.stem + '.txt'
+            output_path = OUTPUT_DIR.joinpath(outfile_name)
 
             with open(output_path, 'w') as outfile:
                 outfile.write("\n".join(str(item) for item in assembled_test))
         # generate test report
-        outputdir = asm_dir.joinpath("output")
-        comp = filecmp.dircmp(outputdir, outputdir.joinpath("expected"))
-        comp.report()
+        comp = filecmp.dircmp(OUTPUT_DIR, EXPECTED_DIR)
+        print(''), comp.report()
 
     else:  # file mode
-        file_assembler = Assembler(infile.file)
-        assembled_file = file_assembler.assemble()
+        assembled_file = Assembler(infile.file).assemble()
 
         inpath = pathlib.PurePath(infile.file)
-        outfile_name = inpath.name.split('.')[0] + '.txt'
-        asm_dir = pathlib.Path.cwd()
-        output_path = asm_dir.joinpath(outfile_name)
+        outfile_name = inpath.stem + '.txt'
+        output_path = CWD.joinpath(outfile_name)
 
         with open(output_path, 'w') as outfile:
             outfile.write("\n".join(str(item) for item in assembled_file))
-
-
-main()
