@@ -5,7 +5,6 @@ import filecmp
 import pathlib
 import qasm_parser
 import qasm_code
-import qasm_error as asm_err
 
 
 class Assembler:
@@ -15,41 +14,31 @@ class Assembler:
 
     def assemble(self):
         # First Pass: Collect all labels and add them to symbol table
-        first = qasm_parser.Parser(self.__infile)  # initialize parser object
         symbolizer = qasm_code.Symbolizer()  # initialize symbolizer object
-        while first.hasMoreCommands():
-            first.advance()
-            if first.commandType() == 'label':
-                if symbolizer.contains(first.label()) is False:
-                    symbolizer.addEntry(first.label(), first.lindex - 1)
-                else:
-                    ldef_reason = "Label defined more than once"
-                    raise asm_err.AssemblerSyntaxError(first.lindex, ldef_reason)
+        generator = qasm_code.Generator()  # initialize code generator object
+        parser = qasm_parser.Parser(self.__infile, symbolizer, generator)
+
+        while parser.hasMoreCommands():
+            parser.advance()
+            if parser.commandType() == 'label':
+                parser.label()
             else:
                 continue
 
         # Reset parser and exclude label definitions from further analysis
-        first.reset()
-        if len(first.source) > 32:  # test program size within bounds
-            raise asm_err.AssemblerMemoryError("Program Size Maximum 32 bytes")
+        parser.reset()
 
         # Second Pass: Collect instructions and generate machine code
-        generator = qasm_code.Generator()  # initialize code generator object
-        while first.hasMoreCommands():
-            first.advance()
-            if first.commandType() == 'data':
-                self.__assembled_list.append(first.data())
-            elif first.commandType() == 'operation':
-                if generator.contains(first.operation()):
-                    opcode = generator.code(first.operation())
-                    operation = opcode[0] + first.operand(opcode[1], symbolizer)
-                    self.__assembled_list.append(operation)
-                else:
-                    u_reason = "Unrecognized Instruction."
-                    raise asm_err.AssemblerSyntaxError(first.lindex, u_reason)
+        while parser.hasMoreCommands():
+            parser.advance()
+            if parser.commandType() == 'data':
+                self.__assembled_list.append(parser.data())
+
+            elif parser.commandType() == 'operation':
+                self.__assembled_list.append(parser.operation())
+
             else:
-                ctype_reason = "UNDEFINED_COMMAND_TYPE: Please Report this Bug"
-                raise asm_err.AssemblerInternalError(first.lindex, ctype_reason)
+                continue
 
         return self.__assembled_list
 
@@ -71,7 +60,7 @@ if __name__ == '__main__':
         parser.error("qas fatal error: No action requested. Use -f or -t.")
 
     # test mode > do not invoke in normal operations (overrides other modes)
-    if infile.test is True:
+    if infile.test:
         for file in TEST_DIR.iterdir():
             print(f"Testing {file}")
             assembled_test = Assembler(file).assemble()
